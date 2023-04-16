@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        label {
+        font-size:12px;
+        }
+        .poster {
+           float:left;
+           height:100%;
+           width:40px;
+     }
+        .info {
+            float: left;
+            padding: 4px;
+        }
+        .title {
+        color:navy;
+        font:600;
+        font-size:14px;
+        }
+        p {
+        display:inline-block;
+        margin-left:2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel panel-info">
+            <div class="panel-heading">Movies</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-3  col-lg-3 col-sm-3 ">
+                        <label for="Genre">Genre</label>
+                        <br />
+                        <select class="form-control" id="Genre">
+                            <option>ALL</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 col-lg-3  col-sm-3 ">
+                        <label for="Year">Year</label>
+                        <br />
+                        <select class="form-control" id="Year">
+                            <option>ALL</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3  col-lg-3  col-sm-3">
+                        <label for="Language">Language</label>
+                        <br />
+                        <select class="form-control" id="Language">
+                            <option>ALL</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="row">
+                        <div class="col-md-10 col-lg-10 col-sm-10">
+
+                            <label for="Rating">Rating</label>
+                            <br />
+                            <select class="form-control" id="Rating">
+                                <option>ALL</option>
+                            </select>
+                            <br />
+                            <button class="btn btn-success btn-sm" onclick="SearchData()" >Search</button>
+                            <button class="btn btn-danger btn-sm" onclick="cleardata()" >Clear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <table class="table table-responsive">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Movie</th>
+                            <th>Year</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblbody">
+                        
+                     
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+   
+   
+    <script type="text/javascript">
+    
+        let arrobj = [];
+        let tr1 = '';
+        function LoadData() {
+          
+
+
+            fetch('/data.json').then(response => {
+                return response.json();
+            }).then(data => {
+                 for (let i = 0; i <= data.length - 1; i++) {
+                     const obj = JSON.parse(JSON.stringify(data[i]));
+                     arrobj.push(obj);
+
+                }
+                LoadDropDowns();
+
+            }).catch(err => {
+                alert("Something went wrong while reading json data file");
+            });
+        }
+        LoadData();
+        
+        function LoadDropDowns() {
+            //loading genre dropdown
+            var ele_gen = document.getElementById("Genre");
+            var ele_year = document.getElementById("Year");
+            var ele_lang = document.getElementById("Language");
+            var ele_rat = document.getElementById("Rating");
+
+            var opt_genere = [];
+            var opt_year = [];
+            var opt_lan = [];
+            var opt_rat = [];
+            let wrd;
+            for (let i = 0; i <= arrobj.length - 1; i++) {
+                if (arrobj[i].genres.length > 0) {
+                    for (let j = 0; j <= arrobj[i].genres.length - 1; j++) {
+
+                        wrd = opt_genere.includes(arrobj[i].genres[j]);
+
+                        if (wrd == false) {
+                            opt_genere = opt_genere + '<option>' + arrobj[i].genres[j] + '</option>';
+                        }
+
+                        wrd = opt_rat.includes(arrobj[i].vote_average[j]);
+
+                        if (wrd == false) {
+                            opt_rat = opt_rat + '<option>' + arrobj[i].vote_average + '</option>';
+                        }
+                        
+                    }
+
+                }
+
+               
+
+                wrd = opt_lan.includes(arrobj[i].original_language);
+                if (wrd == false) {
+                    opt_lan = opt_lan + '<option>' + arrobj[i].original_language + '</option>';
+                }
+
+           
+               
+
+            }
+            //filling year
+            for (let i = 1940; i <= 2024; i++) {
+                opt_year = opt_year + '<option>' + i + '</option>';
+            }
+            ele_year.innerHTML += opt_year;
+            //end filling year
+            ele_gen.innerHTML += opt_genere;
+
+            ele_lang.innerHTML += opt_lan;
+            ele_rat.innerHTML += opt_rat;
+           
+        }
+
+
+        function SearchData() {
+            tr1 = '';
+            let _genre, _year, _lang, _rating;
+            _genre = '';
+            _year = '';
+            _lang = '';
+            _rarting = '';
+
+            _genre = document.getElementById("Genre").value;
+            _year = document.getElementById("Year").value;
+            _lang = document.getElementById("Language").value;
+            _rating = document.getElementById("Rating").value;
+
+            if (_genre == "ALL" && _year == "ALL" && _lang == "ALL" && _rating == "ALL")
+            {
+                loadsearchdata(true, null);
+                return;
+            }
+            for (let i = 0; i <= arrobj.length - 1; i++)
+            {
+                var isvalid = false;
+                if (_genre == "ALL")
+                {
+                    isvalid = true;
+                }
+                else
+                {
+                    for (let j = 0; j <= arrobj[i].genres.length - 1; j++) {
+                        if (arrobj[i].genres[j] == _genre) {
+                            isvalid = true;
+                            break;
+                        }
+                        else {
+                            isvalid = false;
+                        }
+                    }
+                }
+
+                if (isvalid != false) {
+                    if (_year == "ALL") {
+                        isvalid = true;
+                    }
+                    else {
+
+                        if (arrobj[i].release_date.substring(0, 4) == _year) {
+                            isvalid = true;
+                        }
+                        else {
+                            isvalid = false;
+                        }
+
+
+                    }
+                }
+                if (isvalid != false) {
+                    if (_lang == "ALL") {
+                        isvalid = true;
+                    }
+                    else {
+
+                        if (arrobj[i].original_language == _lang) {
+                            isvalid = true;
+                        }
+                        else {
+                            isvalid = false;
+                        }
+                    }
+
+                }
+                if (isvalid != false) {
+                if (_rating == "ALL") {
+                    isvalid = true;
+                }
+                else {
+
+                    if (arrobj[i].vote_average == _rating) {
+                        isvalid = true;
+                    }
+                    else {
+                        isvalid = false;
+                    }
+                    }
+                }
+
+                if (isvalid == true) {
+                    loadsearchdata(false, arrobj[i], i + 1);
+
+                }
+
+
+            }
+            document.getElementById("tblbody").innerHTML = tr1;
+            
+
+        }
+        function cleardata() {
+            document.getElementById("Genre").value = "ALL";
+            document.getElementById("Year").value = "ALL";
+            document.getElementById("Language").value = "ALL";
+            document.getElementById("Rating").value = "ALL";
+            document.getElementById("tblbody").innerHTML = '';
+
+
+
+        }
+
+        function loadsearchdata(loadall = false, item, count) {
+            var ele = document.getElementById("tblbody");
+
+            if (loadall == true) {
+                for (let i = 0; i <= arrobj.length - 1; i++) {
+                    AddRow(arrobj[i], i + 1);
+
+
+                }
+
+                ele.innerHTML = tr1;
+            }
+            else {
+                AddRow(item,count);
+            }
+        }
+        function AddRow(item,count)
+        {
+            var posterpath = 'http://image.tmdb.org/t/p/w500/' + item.poster_path;
+             tr1 += '<tr>' +
+                '<td>' + count + '</td>' +
+                 '<td><img src="' + posterpath+'" alt="IMG" class="poster"/><div class="info "><span class="title">' + item.title + '</span><br><span class="badge"> ' + item.certification + '</span><p>' + GetgenereString(item) + '</p></div></td>' +
+                '<td>' + item.release_date.substring(0, 4) + '</td>' +
+                '</tr>';
+        
+        }
+
+        function GetgenereString(item) {
+           
+            var val = '';
+            for (let i = 0; i <= item.genres.length - 1; i++)
+            {
+                val += item.genres[i];
+
+                if (i < item.genres.length - 1)
+                {
+                    val += ',';
+                }
+               
+            }
+            return val;
+        }
+
+    </script>
+</body>
+</html>
